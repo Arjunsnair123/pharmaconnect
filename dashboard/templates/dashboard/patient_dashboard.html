@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Patient Dashboard | PharmaConnect</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+<nav class="bg-emerald-600 text-white shadow-lg">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold flex items-center gap-2">
+            <i class="fa-solid fa-capsules"></i> PharmaConnect
+        </h1>
+        <div class="flex items-center gap-4">
+            <span class="bg-emerald-700 px-4 py-1 rounded-full">
+                <i class="fa-solid fa-user"></i> {{ request.user.username }}
+            </span>
+            <a href="/accounts/logout/" class="border px-3 py-1 rounded hover:bg-white hover:text-emerald-600">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<header class="bg-emerald-100 py-12">
+    <div class="container mx-auto text-center">
+        <h2 class="text-4xl font-bold text-emerald-800 mb-4">Find Medicines Near You</h2>
+        <p class="text-emerald-600 mb-6">Real-time availability • Emergency support • Smart substitutes</p>
+
+        <div class="max-w-3xl mx-auto bg-white rounded-full shadow flex p-2 gap-2">
+            <input id="medicineInput" type="text"
+                   placeholder="Search Paracetamol, Insulin..."
+                   class="flex-1 px-5 py-3 outline-none rounded-full">
+
+            <button onclick="searchMedicine()"
+                    class="bg-emerald-600 text-white px-6 rounded-full hover:bg-emerald-700">
+                <i class="fa-solid fa-magnifying-glass mr-1"></i> Search
+            </button>
+
+            <a href="/dashboard/map/"
+               class="bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 flex items-center">
+                <i class="fa-solid fa-map mr-2"></i> Map
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container mx-auto px-6 py-10">
+
+    <h3 class="text-2xl font-bold mb-6">Nearby Pharmacies</h3>
+
+    <div id="results" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+
+    <div class="mt-10 text-center">
+        <a href="/dashboard/map/?mode=emergency"
+           class="bg-red-600 text-white px-10 py-4 rounded-full text-lg font-bold animate-pulse">
+            🚑 Emergency Medicine Finder
+        </a>
+    </div>
+
+</main>
+
+<script>
+function searchMedicine() {
+    const med = document.getElementById("medicineInput").value;
+    const lat = 10.8219745;
+    const lon = 76.6432853;
+
+    fetch(`/api/inventory/availability/?medicine=${encodeURIComponent(med)}&lat=${lat}&lon=${lon}`)
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById("results");
+            container.innerHTML = "";
+
+            if (data.length === 0) {
+                container.innerHTML = "<p class='text-red-500'>No pharmacies found.</p>";
+                return;
+            }
+
+            data.forEach(p => {
+                container.innerHTML += `
+                    <div class="bg-white rounded-xl shadow p-5 border">
+                        <h4 class="font-bold text-lg">${p.pharmacy}</h4>
+                        <p class="text-sm text-gray-500">${p.distance_km} km away</p>
+                        <p class="mt-2">Stock: <span class="font-semibold">${p.quantity}</span></p>
+                        <p class="text-sm ${p.is_24x7 ? 'text-green-600' : 'text-red-500'}">
+                            ${p.is_24x7 ? '24x7 Available' : 'Not 24x7'}
+                        </p>
+                    </div>
+                `;
+            });
+        });
+}
+</script>
+
+</body>
+</html>

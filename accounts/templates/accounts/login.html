@@ -1,0 +1,47 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Login | PharmaConnect{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[80vh]">
+  <div class="bg-white p-10 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
+    
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+        <i class="fa-solid fa-user-lock text-2xl"></i>
+      </div>
+      <h2 class="text-3xl font-bold text-gray-800">Welcome Back</h2>
+      <p class="text-gray-500 mt-2">Login to manage your medicines</p>
+    </div>
+
+    <form method="post" action="{% url 'login' %}" class="space-y-6">
+      {% csrf_token %}
+
+      <div>
+        <label class="block text-gray-700 text-sm font-bold mb-2 ml-1">Username</label>
+        <input type="text" name="username" required
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500">
+      </div>
+
+      <div>
+        <label class="block text-gray-700 text-sm font-bold mb-2 ml-1">Password</label>
+        <input type="password" name="password" required
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500">
+      </div>
+
+      <button type="submit"
+        class="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700">
+        Login
+      </button>
+    </form>
+
+    <div class="mt-8 text-center text-sm text-gray-600">
+      <p>Don't have an account? 
+        <a href="{% url 'register' %}" class="text-emerald-600 font-bold hover:underline">
+          Create Account
+        </a>
+      </p>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
