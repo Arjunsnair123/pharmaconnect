@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework.permissions import AllowAny
+from medicines.models import Medicine
 
 from .models import Medicine
 from .serializers import MedicineSerializer
@@ -97,3 +98,18 @@ class SmartSubstituteView(APIView):
             "generic": target.generic_name,
             "nearest_substitutes": results
         })
+
+class MedicineSuggestView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        q = request.GET.get("q", "").strip()
+
+        if len(q) < 2:
+            return Response([])
+
+        medicines = Medicine.objects.filter(
+            brand_name__icontains=q
+        ).values_list("brand_name", flat=True)[:8]
+
+        return Response(list(medicines))
