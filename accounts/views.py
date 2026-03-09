@@ -24,6 +24,21 @@ def login_view(request):
 
     return render(request, 'accounts/login.html')
 
+from django.shortcuts import redirect
+
+def home_redirect(request):
+
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    if request.user.profile.role == "PHARMACY":
+        return redirect("/api/pharmacies/dashboard/")
+
+    if request.user.profile.role == "PATIENT":
+        return redirect("/dashboard/patient/")
+
+    return redirect("login")
+
 
 from pharmacies.models import Pharmacy
 

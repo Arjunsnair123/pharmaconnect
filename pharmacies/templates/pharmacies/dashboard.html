@@ -69,12 +69,34 @@
     </div> {% endcomment %}
 
     <!-- AI Demand Section -->
-    <div class="bg-white rounded-xl shadow p-6">
-        <h3 class="text-xl font-bold mb-2">AI Demand Forecast</h3>
-        <p class="text-gray-600">
-            This section will display predicted demand trends and restock suggestions using Machine Learning.
-        </p>
-    </div>
+   <div class="bg-white rounded-xl shadow p-6 mt-6">
+    <h3 class="text-xl font-bold mb-4 text-emerald-700">
+        AI Restock Suggestions
+    </h3>
+
+    {% if ai_restock %}
+    <table class="w-full border-collapse">
+        <thead>
+            <tr class="bg-gray-100">
+                <th class="p-3 text-left">Medicine</th>
+                <th class="p-3 text-left">Recommended Units</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for med, qty in ai_restock.items %}
+            <tr class="border-b">
+                <td class="p-3">{{ med }}</td>
+                <td class="p-3 font-semibold text-emerald-600">{{ qty }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+        <p class="text-gray-500">No AI recommendations yet.</p>
+    {% endif %}
+</div>
 
 </div>
 {% endblock %}

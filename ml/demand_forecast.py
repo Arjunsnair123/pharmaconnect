@@ -2,10 +2,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 import numpy as np
-
+import os
 def predict_next_week_demand():
     # Load data
-    data = pd.read_csv("area_demand.csv")
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    data = pd.read_csv(os.path.join(BASE_DIR, "area_demand.csv"))
 
     X = data[['day']]
     y = data['total_demand']
@@ -34,3 +36,12 @@ def predict_next_week_demand():
     total_weekly_demand = int(predictions.sum())
 
     return total_weekly_demand, predictions
+
+
+if __name__== "__main__":
+    total, predictions = predict_next_week_demand()
+
+    print("Predicted daily demand for next 7 days:")
+    print(predictions)
+
+    print("\nTotal predicted demand for next week:", total)

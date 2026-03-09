@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny
 from .models import Pharmacy
 from .utils import haversine
 from inventory.models import Inventory
+from ml_service.ai_restock_service import generate_ai_restock
 
 
 # ----------- API: Nearest Pharmacies (Already Working) -----------
@@ -53,10 +54,18 @@ def pharmacy_dashboard(request):
 )
 
     inventory = Inventory.objects.filter(pharmacy=pharmacy)
+    
+    ai_data = generate_ai_restock()
+
+    pharmacy_ai = ai_data["pharmacy_allocation"].get(pharmacy.name, {}) 
 
     context = {
         "pharmacy": pharmacy,
         "inventory": inventory,
     }
 
-    return render(request, "pharmacies/dashboard.html", context)
+    return render(request, "pharmacies/dashboard.html", {
+    "pharmacy": pharmacy,
+    "inventory": inventory,
+    "ai_restock": pharmacy_ai
+})

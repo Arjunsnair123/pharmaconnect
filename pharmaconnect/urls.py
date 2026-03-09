@@ -1,8 +1,10 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from accounts.views import home_redirect
 
 urlpatterns = [
+    path('', home_redirect, name="home"),
     path('admin/', admin.site.urls),
 
     # Authentication
