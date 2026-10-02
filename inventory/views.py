@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -9,6 +10,7 @@ from rest_framework.authentication import SessionAuthentication
 from pharmacies.models import Pharmacy
 from medicines.models import Medicine
 from .models import Inventory
+from accounts.views import get_role
 from pharmacies.utils import haversine
 from ml_service.models import SearchLog
 
@@ -92,7 +94,14 @@ class AvailabilityView(APIView):
 
 @login_required
 def pharmacy_inventory(request):
-    pharmacy = Pharmacy.objects.get(user=request.user)
+    # The pharmacy is always derived from the logged-in user, never from the
+    # request, so one pharmacy cannot read or edit another's stock.
+    if get_role(request.user) != "PHARMACY":
+        return HttpResponseForbidden("Pharmacy account required.")
+
+    pharmacy = Pharmacy.objects.filter(user=request.user).first()
+    if pharmacy is None:
+        return HttpResponseForbidden("No pharmacy is linked to this account.")
 
     if request.method == "POST":
         try:
