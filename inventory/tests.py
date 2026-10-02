@@ -2,10 +2,12 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APIClient
 
 from accounts.models import Profile
 from inventory.models import Inventory
 from medicines.models import Medicine
+from ml_service.models import SearchLog
 from pharmacies.models import Pharmacy
 
 
@@ -75,3 +77,79 @@ class InventoryConstraintTests(TestCase):
     def test_negative_quantity_is_rejected(self):
         with self.assertRaises(IntegrityError), transaction.atomic():
             Inventory.objects.create(pharmacy=self.pharmacy, medicine=self.medicine, quantity=-1)
+
+
+class AvailabilitySearchTests(TestCase):
+    """Search point is (10.80, 76.64); 'near' is ~1 km away, 'further' ~5 km."""
+
+    URL = "/api/inventory/availability/"
+
+    def setUp(self):
+        self.client = APIClient()
+        self.patient = User.objects.create_user("patient", password="pw")
+        self.client.force_authenticate(self.patient)
+
+        self.dolo = Medicine.objects.create(
+            brand_name="Dolo 650", generic_name="Paracetamol", composition="Paracetamol",
+            strength="650mg", dosage_form="tablet", category="analgesic",
+        )
+        self.near = self.make_pharmacy("near", 10.81, 76.64, is_24x7=False)
+        self.further = self.make_pharmacy("further", 10.845, 76.64, is_24x7=True)
+        self.empty = self.make_pharmacy("empty", 10.80, 76.64, is_24x7=True)
+
+        Inventory.objects.create(pharmacy=self.near, medicine=self.dolo, quantity=10)
+        Inventory.objects.create(pharmacy=self.further, medicine=self.dolo, quantity=3)
+        Inventory.objects.create(pharmacy=self.empty, medicine=self.dolo, quantity=0)
+
+    def make_pharmacy(self, name, lat, lon, **extra):
+        user = User.objects.create_user(f"{name}-owner", password="pw")
+        return Pharmacy.objects.create(
+            user=user, name=name, address="x", latitude=lat, longitude=lon, **extra
+        )
+
+    def search(self, **params):
+        query = {"medicine": "Dolo 650", "lat": 10.80, "lon": 76.64, **params}
+        return self.client.get(self.URL, query)
+
+    def test_returns_stocked_pharmacies_nearest_first(self):
+        body = self.search().json()
+
+        self.assertEqual([r["pharmacy"] for r in body["results"]], ["near", "further"])
+        self.assertEqual(body["nearest_pharmacy"], "near")
+        self.assertEqual(body["results"][0]["quantity"], 10)
+        self.assertLess(body["results"][0]["distance_km"], body["results"][1]["distance_km"])
+
+    def test_out_of_stock_pharmacy_is_excluded_even_when_closest(self):
+        # 'empty' sits exactly on the search point but has quantity 0.
+        names = [r["pharmacy"] for r in self.search().json()["results"]]
+        self.assertNotIn("empty", names)
+
+    def test_medicine_out_of_stock_everywhere_gives_empty_results(self):
+        Inventory.objects.update(quantity=0)
+
+        response = self.search()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["results"], [])
+        self.assertIsNone(response.json()["nearest_pharmacy"])
+        self.assertFalse(SearchLog.objects.exists())
+
+    def test_emergency_mode_returns_only_24x7_pharmacies(self):
+        body = self.search(emergency="true").json()
+
+        self.assertEqual([r["pharmacy"] for r in body["results"]], ["further"])
+        self.assertEqual(body["nearest_pharmacy"], "further")
+
+    def test_medicine_name_is_case_insensitive(self):
+        self.assertEqual(self.search(medicine="dolo 650").json()["count"], 2)
+
+    def test_unknown_medicine_is_404(self):
+        self.assertEqual(self.search(medicine="Nonexistent").status_code, 404)
+
+    def test_search_is_logged_against_nearest_pharmacy(self):
+        self.search()
+
+        log = SearchLog.objects.get()
+        self.assertEqual(log.user, self.patient)
+        self.assertEqual(log.nearest_pharmacy, self.near)
+        self.assertEqual(log.medicine, "Dolo 650")

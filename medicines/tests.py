@@ -3,7 +3,9 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from inventory.models import Inventory
 from medicines.models import Medicine
+from pharmacies.models import Pharmacy
 
 
 def make_medicine(brand, generic="Paracetamol", **extra):
@@ -92,3 +94,53 @@ class AuthenticationTests(TestCase):
 
     def test_api_schema_is_served(self):
         self.assertEqual(self.client.get("/api/schema/").status_code, 200)
+
+
+class SubstituteTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.dolo = make_medicine("Dolo 650")
+        self.calpol = make_medicine("Calpol")
+        self.crocin = make_medicine("Crocin")
+        make_medicine("Calpol Syrup", dosage_form="syrup")   # same generic, other form
+        make_medicine("Brufen", generic="Ibuprofen")         # other generic
+
+    def test_substitutes_share_generic_and_dosage_form(self):
+        body = self.client.get("/api/medicines/substitutes/", {"brand": "dolo 650"}).json()
+
+        self.assertEqual(body["original"]["brand_name"], "Dolo 650")
+        self.assertEqual([m["brand_name"] for m in body["substitutes"]], ["Calpol", "Crocin"])
+
+    def test_unknown_brand_is_404(self):
+        response = self.client.get("/api/medicines/substitutes/", {"brand": "Nope"})
+        self.assertEqual(response.status_code, 404)
+
+    def test_smart_substitutes_lists_stocked_alternatives_nearest_first(self):
+        near = self.make_pharmacy("near", 10.81, is_24x7=False)
+        further = self.make_pharmacy("further", 10.845, is_24x7=True)
+        Inventory.objects.create(pharmacy=further, medicine=self.calpol, quantity=4)
+        Inventory.objects.create(pharmacy=near, medicine=self.crocin, quantity=2)
+        Inventory.objects.create(pharmacy=near, medicine=self.calpol, quantity=0)   # out of stock
+        Inventory.objects.create(pharmacy=near, medicine=self.dolo, quantity=9)     # the original
+
+        params = {"brand": "Dolo 650", "lat": 10.80, "lon": 76.64}
+        body = self.client.get("/api/medicines/smart-substitutes/", params).json()
+
+        self.assertEqual(
+            [(r["medicine"], r["pharmacy"]) for r in body["nearest_substitutes"]],
+            [("Crocin", "near"), ("Calpol", "further")],
+        )
+
+        emergency = self.client.get(
+            "/api/medicines/smart-substitutes/", {**params, "emergency": "true"}
+        ).json()
+        self.assertEqual(
+            [(r["medicine"], r["pharmacy"]) for r in emergency["nearest_substitutes"]],
+            [("Calpol", "further")],
+        )
+
+    def make_pharmacy(self, name, lat, **extra):
+        user = User.objects.create_user(f"{name}-owner", password="pw")
+        return Pharmacy.objects.create(
+            user=user, name=name, address="x", latitude=lat, longitude=76.64, **extra
+        )
