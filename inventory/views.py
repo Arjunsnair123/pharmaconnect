@@ -2,46 +2,39 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import SessionAuthentication
 
 from pharmacies.models import Pharmacy
 from medicines.models import Medicine
 from .models import Inventory
 from accounts.views import get_role
-from pharmacies.utils import haversine, bounding_box_filter, get_radius_km
+from pharmacies.utils import haversine, bounding_box_filter
+from pharmaconnect.api import AvailabilityQuerySerializer, paginate
 from ml_service.models import SearchLog
 
 
 # ---------------- MEDICINE AVAILABILITY API ----------------
 
 class AvailabilityView(APIView):
-    authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(parameters=[AvailabilityQuerySerializer], responses=OpenApiTypes.OBJECT)
     def get(self, request):
-        med_name = request.GET.get('medicine')
-        lat = request.GET.get('lat')
-        lon = request.GET.get('lon')
-        emergency = request.GET.get('emergency', 'false').lower() == 'true'
+        params = AvailabilityQuerySerializer(data=request.query_params)
+        params.is_valid(raise_exception=True)
+        med_name = params.validated_data['medicine']
+        user_lat = params.validated_data['lat']
+        user_lon = params.validated_data['lon']
+        radius_km = params.validated_data['radius_km']
+        emergency = params.validated_data['emergency']
 
-        if not med_name or not lat or not lon:
-            return Response({"error": "Missing medicine or location"}, status=400)
-
-        try:
-            user_lat = float(lat)
-            user_lon = float(lon)
-        except ValueError:
-            return Response({"error": "Invalid coordinates"}, status=400)
-
-        try:
-            medicine = Medicine.objects.get(brand_name__iexact=med_name)
-        except Medicine.DoesNotExist:
+        medicine = Medicine.objects.filter(brand_name__iexact=med_name).first()
+        if medicine is None:
             return Response({"error": "Medicine not found"}, status=404)
-
-        radius_km = get_radius_km(request)
 
         stocks = Inventory.objects.select_related("pharmacy").filter(
             medicine=medicine,
@@ -88,9 +81,12 @@ class AvailabilityView(APIView):
 
         result.sort(key=lambda x: x["distance_km"])
 
+        page, envelope = paginate(self, request, result)
+
         return Response({
             "nearest_pharmacy": nearest_pharmacy.name if nearest_pharmacy else None,
-            "results": result
+            **envelope,
+            "results": page
         })
 
 

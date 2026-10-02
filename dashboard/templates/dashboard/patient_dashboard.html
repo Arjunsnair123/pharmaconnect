@@ -75,12 +75,14 @@ function searchMedicine() {
             const container = document.getElementById("results");
             container.innerHTML = "";
 
-            if (data.length === 0) {
+            const results = data.results || [];
+
+            if (results.length === 0) {
                 container.innerHTML = "<p class='text-red-500'>No pharmacies found.</p>";
                 return;
             }
 
-            data.forEach(p => {
+            results.forEach(p => {
                 container.innerHTML += `
                     <div class="bg-white rounded-xl shadow p-5 border">
                         <h4 class="font-bold text-lg">${p.pharmacy}</h4>

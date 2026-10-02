@@ -21,14 +21,14 @@ class NearestPharmacyRadiusTests(TestCase):
 
     def test_default_radius_excludes_distant_pharmacies(self):
         response = self.client.get("/api/pharmacies/nearest/", {"lat": 10.82, "lon": 76.64})
-        self.assertEqual([p["name"] for p in response.json()], ["near Medicals"])
+        self.assertEqual([p["name"] for p in response.json()["results"]], ["near Medicals"])
 
     def test_radius_km_param_widens_search(self):
         response = self.client.get(
             "/api/pharmacies/nearest/", {"lat": 10.82, "lon": 76.64, "radius_km": 400}
         )
         self.assertEqual(
-            [p["name"] for p in response.json()], ["near Medicals", "far Medicals"]
+            [p["name"] for p in response.json()["results"]], ["near Medicals", "far Medicals"]
         )
 
     def test_bounding_box_skips_longitude_bound_across_antimeridian(self):

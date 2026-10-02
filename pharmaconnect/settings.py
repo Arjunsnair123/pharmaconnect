@@ -58,10 +58,10 @@ INSTALLED_APPS = [
     'medicines',
     'pharmacies',
     'inventory',
-    'emergency',
     'ml_service',
     'rest_framework_simplejwt',
     'corsheaders',
+    'drf_spectacular',
     'tailwind',
     'theme',
     'dashboard',
@@ -156,9 +156,21 @@ STATICFILES_DIRS = [
 ]
 
 REST_FRAMEWORK = {
+    # JWT for API clients, session for the server-rendered web UI. JWT is
+    # listed first so unauthenticated API calls get 401 + WWW-Authenticate.
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'pharmaconnect.api.StandardPagination',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'PharmaConnect API',
+    'DESCRIPTION': 'Pharmacy locator: medicine availability, generic substitutes '
+                   'and emergency 24x7 search.',
+    'VERSION': '1.0.0',
 }
 
 SIMPLE_JWT = {

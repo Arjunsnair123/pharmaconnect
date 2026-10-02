@@ -1,13 +1,16 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
 from .models import Pharmacy
 from accounts.views import get_role
-from .utils import haversine, bounding_box_filter, get_radius_km
+from .utils import haversine, bounding_box_filter
+from pharmaconnect.api import LocationQuerySerializer, paginate
 from inventory.models import Inventory
 from ml_service.ai_restock_service import generate_ai_restock
 
@@ -16,11 +19,13 @@ from ml_service.ai_restock_service import generate_ai_restock
 class NearestPharmacyView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(parameters=[LocationQuerySerializer], responses=OpenApiTypes.OBJECT)
     def get(self, request):
-        user_lat = float(request.GET.get('lat'))
-        user_lon = float(request.GET.get('lon'))
-
-        radius_km = get_radius_km(request)
+        params = LocationQuerySerializer(data=request.query_params)
+        params.is_valid(raise_exception=True)
+        user_lat = params.validated_data['lat']
+        user_lon = params.validated_data['lon']
+        radius_km = params.validated_data['radius_km']
 
         pharmacies = Pharmacy.objects.filter(
             **bounding_box_filter(user_lat, user_lon, radius_km)
@@ -41,7 +46,8 @@ class NearestPharmacyView(APIView):
             })
 
         result.sort(key=lambda x: x["distance_km"])
-        return Response(result)
+        page, envelope = paginate(self, request, result)
+        return Response({**envelope, "results": page})
 
 
 # ----------- WEB: Pharmacy Dashboard -----------

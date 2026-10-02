@@ -1,7 +1,5 @@
 import math
 
-from django.conf import settings
-
 KM_PER_DEGREE_LAT = 111.32
 
 
@@ -41,13 +39,3 @@ def bounding_box_filter(lat, lon, radius_km, prefix=""):
 
     return filters
 
-
-def get_radius_km(request):
-    """Optional ?radius_km=, falling back to the configured default."""
-    try:
-        radius = float(request.GET.get("radius_km", ""))
-    except ValueError:
-        return settings.DEFAULT_SEARCH_RADIUS_KM
-    if not 0 < radius <= settings.MAX_SEARCH_RADIUS_KM:
-        return settings.DEFAULT_SEARCH_RADIUS_KM
-    return radius
