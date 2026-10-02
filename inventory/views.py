@@ -13,6 +13,8 @@ from pharmacies.utils import haversine
 from ml_service.models import SearchLog
 
 
+# ---------------- MEDICINE AVAILABILITY API ----------------
+
 class AvailabilityView(APIView):
     authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
@@ -68,6 +70,7 @@ class AvailabilityView(APIView):
                 "is_24x7": p.is_24x7
             })
 
+        # Save search log
         if request.user.is_authenticated and nearest_pharmacy:
             SearchLog.objects.create(
                 user=request.user,
@@ -92,20 +95,31 @@ def pharmacy_inventory(request):
     pharmacy = Pharmacy.objects.get(user=request.user)
 
     if request.method == "POST":
-        med_id = request.POST["medicine"]
-        qty = int(request.POST["quantity"])
+        try:
+            med_id = request.POST.get("medicine")
+            qty = int(request.POST.get("quantity", 0))
 
-        medicine = Medicine.objects.get(id=med_id)
-        inventory, created = Inventory.objects.get_or_create(
-            pharmacy=pharmacy,
-            medicine=medicine
-        )
-        inventory.quantity = qty
-        inventory.save()
+            medicine = Medicine.objects.get(id=med_id)
+
+            
+            inventory, created = Inventory.objects.get_or_create(
+                pharmacy=pharmacy,
+                medicine=medicine,
+                defaults={"quantity": qty}
+            )
+
+            # If already exists → update quantity
+            if not created:
+                inventory.quantity = qty
+                inventory.save()
+
+        except Exception as e:
+            print("Error:", e)
+
         return redirect("pharmacy_inventory")
 
-    inventories = Inventory.objects.filter(pharmacy=pharmacy)\
-                    .select_related("medicine")\
+    inventories = Inventory.objects.filter(pharmacy=pharmacy) \
+                    .select_related("medicine") \
                     .order_by("medicine__brand_name")
 
     medicines = Medicine.objects.all().order_by("brand_name")

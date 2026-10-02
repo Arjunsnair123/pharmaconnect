@@ -1,13 +1,89 @@
 brand_name,generic_name,composition,strength,dosage_form,category
 Dolo 650,Paracetamol,Paracetamol 650mg,650mg,Tablet,Analgesic
-Crocin,Paracetamol,Paracetamol 500mg,500mg,Tablet,Analgesic
-Calpol,Paracetamol,Paracetamol 500mg,500mg,Tablet,Analgesic
-Brufen,Ibuprofen,Ibuprofen 400mg,400mg,Tablet,Analgesic
-Voveran,Diclofenac,Diclofenac Sodium 50mg,50mg,Tablet,Analgesic
+Dolo 500,Paracetamol,Paracetamol 500mg,500mg,Tablet,Analgesic
+Crocin 500,Paracetamol,Paracetamol 500mg,500mg,Tablet,Analgesic
+Crocin Advance,Paracetamol,Paracetamol 500mg,500mg,Tablet,Analgesic
+Calpol 500,Paracetamol,Paracetamol 500mg,500mg,Tablet,Analgesic
+Calpol 650,Paracetamol,Paracetamol 650mg,650mg,Tablet,Analgesic
+Calpol Syrup,Paracetamol,Paracetamol 250mg/5ml,Syrup,Syrup,Analgesic
+Calpol Drops,Paracetamol,Paracetamol Drops,Drops,Liquid,Analgesic
+Brufen 200,Ibuprofen,Ibuprofen 200mg,200mg,Tablet,Analgesic
+Brufen 400,Ibuprofen,Ibuprofen 400mg,400mg,Tablet,Analgesic
+Combiflam,Ibuprofen+Paracetamol,Ibuprofen 400mg + Paracetamol 325mg,725mg,Tablet,Analgesic
+Combiflam Suspension,Ibuprofen+Paracetamol,Ibuprofen + Paracetamol,Suspension,Liquid,Analgesic
+Zerodol 100,Aceclofenac,Aceclofenac 100mg,100mg,Tablet,Analgesic
+Zerodol SP,Aceclofenac+Paracetamol,Aceclofenac + Paracetamol,Tablet,Tablet,Analgesic
+Nise 100,Nimesulide,Nimesulide 100mg,100mg,Tablet,Analgesic
+Nise Suspension,Nimesulide,Nimesulide Suspension,Suspension,Liquid,Analgesic
+Voveran 50,Diclofenac,Diclofenac Sodium 50mg,50mg,Tablet,Analgesic
+Voveran SR,Diclofenac,Diclofenac SR,Tablet,Tablet,Analgesic
 Augmentin 625,Amoxicillin+Clavulanate,Amoxicillin 500mg + Clavulanate 125mg,625mg,Tablet,Antibiotic
-Azithral,Azithromycin,Azithromycin 500mg,500mg,Tablet,Antibiotic
-Ciplox,Ciprofloxacin,Ciprofloxacin 500mg,500mg,Tablet,Antibiotic
-Pantocid,Pantoprazole,Pantoprazole 40mg,40mg,Tablet,Antacid
-Omez,Omeprazole,Omeprazole 20mg,20mg,Capsule,Antacid
-Shelcal,Calcium Carbonate,Calcium Carbonate 500mg,500mg,Tablet,Supplement
-Becosules,Multivitamin,Vitamin B Complex,Syrup,Syrup,Supplement
+Augmentin 1000,Amoxicillin+Clavulanate,Amoxicillin 875mg + Clavulanate 125mg,1000mg,Tablet,Antibiotic
+Augmentin Duo,Amoxicillin+Clavulanate,Amoxicillin + Clavulanate,Suspension,Liquid,Antibiotic
+Azithral 500,Azithromycin,Azithromycin 500mg,500mg,Tablet,Antibiotic
+Azee 500,Azithromycin,Azithromycin 500mg,500mg,Tablet,Antibiotic
+Azee 250,Azithromycin,Azithromycin 250mg,250mg,Tablet,Antibiotic
+Ciplox 500,Ciprofloxacin,Ciprofloxacin 500mg,500mg,Tablet,Antibiotic
+Ciplox 250,Ciprofloxacin,Ciprofloxacin 250mg,250mg,Tablet,Antibiotic
+Zifi 200,Cefixime,Cefixime 200mg,200mg,Tablet,Antibiotic
+Zifi Suspension,Cefixime,Cefixime Suspension,Suspension,Liquid,Antibiotic
+Taxim-O 200,Cefixime,Cefixime 200mg,200mg,Tablet,Antibiotic
+Taxim Injection,Ceftriaxone,Ceftriaxone Injection,Injection,Injection,Antibiotic
+Monocef 1g,Ceftriaxone,Ceftriaxone 1g,1g,Injection,Antibiotic
+Oflox 200,Ofloxacin,Ofloxacin 200mg,200mg,Tablet,Antibiotic
+Oflox OZ,Ofloxacin+Ornidazole,Ofloxacin + Ornidazole,Tablet,Tablet,Antibiotic
+Levoflox 500,Levofloxacin,Levofloxacin 500mg,500mg,Tablet,Antibiotic
+Pantocid 40,Pantoprazole,Pantoprazole 40mg,40mg,Tablet,Antacid
+Pantocid D,Pantoprazole+Domperidone,Pantoprazole 40mg + Domperidone,Tablet,Tablet,Antacid
+Pantocid IV,Pantoprazole,Pantoprazole Injection,Injection,Injection,Antacid
+Omez 20,Omeprazole,Omeprazole 20mg,20mg,Capsule,Antacid
+Omez D,Omeprazole+Domperidone,Omeprazole + Domperidone,Capsule,Capsule,Antacid
+Omez Insta,Omeprazole,Omeprazole Powder,Sachet,Powder,Antacid
+Rantac 150,Ranitidine,Ranitidine 150mg,150mg,Tablet,Antacid
+Rantac Syrup,Ranitidine,Ranitidine Syrup,Syrup,Syrup,Antacid
+Gelusil Syrup,Antacid,Aluminium Hydroxide + Magnesium Hydroxide,Syrup,Syrup,Antacid
+Digene Tablet,Antacid,Aluminium Hydroxide + Magnesium Carbonate,Tablet,Tablet,Antacid
+Digene Gel,Antacid,Antacid Gel,Gel,Gel,Antacid
+Shelcal 500,Calcium Carbonate,Calcium Carbonate 500mg,500mg,Tablet,Supplement
+Shelcal HD,Calcium+Vitamin D,Calcium + Vitamin D3,Tablet,Tablet,Supplement
+Shelcal XT,Calcium+Iron,Calcium + Iron,Tablet,Tablet,Supplement
+Becosules Capsule,Multivitamin,Vitamin B Complex,Capsule,Capsule,Supplement
+Becosules Syrup,Multivitamin,Vitamin B Complex,Syrup,Syrup,Supplement
+Revital Capsule,Multivitamin,Ginseng + Vitamins,Capsule,Capsule,Supplement
+Revital H,Multivitamin,Multivitamin Capsule,Capsule,Capsule,Supplement
+Limcee 500,Vitamin C,Ascorbic Acid 500mg,500mg,Tablet,Supplement
+Limcee Chewable,Vitamin C,Vitamin C Chewable,Tablet,Tablet,Supplement
+Evion 400,Vitamin E,Vitamin E 400mg,400mg,Capsule,Supplement
+Zincovit Tablet,Multivitamin,Zinc + Multivitamins,Tablet,Tablet,Supplement
+A to Z Capsule,Multivitamin,Multivitamin Capsule,Capsule,Capsule,Supplement
+Supradyn Tablet,Multivitamin,Multivitamin Tablet,Tablet,Tablet,Supplement
+Allegra 120,Fexofenadine,Fexofenadine 120mg,120mg,Tablet,Antihistamine
+Allegra 180,Fexofenadine,Fexofenadine 180mg,180mg,Tablet,Antihistamine
+Cetirizine 10,Cetirizine,Cetirizine 10mg,10mg,Tablet,Antihistamine
+Cetirizine Syrup,Cetirizine,Cetirizine Syrup,Syrup,Syrup,Antihistamine
+Levocet 5,Levocetirizine,Levocetirizine 5mg,5mg,Tablet,Antihistamine
+Montair LC,Montelukast+Levocetirizine,Montelukast + Levocetirizine,Tablet,Tablet,Antihistamine
+Benadryl Syrup,Diphenhydramine,Diphenhydramine Syrup,Syrup,Syrup,Antihistamine
+Corex Syrup,Codeine+Chlorpheniramine,Codeine + CPM,Syrup,Syrup,Cough
+Ascoril Syrup,Salbutamol+Guaifenesin,Salbutamol + Guaifenesin,Syrup,Syrup,Cough
+Alex Syrup,Dextromethorphan,Dextromethorphan,Syrup,Syrup,Cough
+Glycomet 500,Metformin,Metformin 500mg,500mg,Tablet,Antidiabetic
+Glycomet 850,Metformin,Metformin 850mg,850mg,Tablet,Antidiabetic
+Amaryl 1,Glimepiride,Glimepiride 1mg,1mg,Tablet,Antidiabetic
+Amaryl 2,Glimepiride,Glimepiride 2mg,2mg,Tablet,Antidiabetic
+Januvia 100,Sitagliptin,Sitagliptin 100mg,100mg,Tablet,Antidiabetic
+Telma 40,Telmisartan,Telmisartan 40mg,40mg,Tablet,Antihypertensive
+Telma 80,Telmisartan,Telmisartan 80mg,80mg,Tablet,Antihypertensive
+Amlong 5,Amlodipine,Amlodipine 5mg,5mg,Tablet,Antihypertensive
+Amlong 10,Amlodipine,Amlodipine 10mg,10mg,Tablet,Antihypertensive
+Ecosprin 75,Aspirin,Aspirin 75mg,75mg,Tablet,Antiplatelet
+Ecosprin 150,Aspirin,Aspirin 150mg,150mg,Tablet,Antiplatelet
+Clopilet 75,Clopidogrel,Clopidogrel 75mg,75mg,Tablet,Antiplatelet
+Atorva 10,Atorvastatin,Atorvastatin 10mg,10mg,Tablet,Cholesterol
+Atorva 20,Atorvastatin,Atorvastatin 20mg,20mg,Tablet,Cholesterol
+Rosuvas 10,Rosuvastatin,Rosuvastatin 10mg,10mg,Tablet,Cholesterol
+Rosuvas 20,Rosuvastatin,Rosuvastatin 20mg,20mg,Tablet,Cholesterol
+Thyronorm 50,Thyroxine,Levothyroxine 50mcg,50mcg,Tablet,Hormone
+Thyronorm 100,Thyroxine,Levothyroxine 100mcg,100mcg,Tablet,Hormone
+Eltroxin 50,Thyroxine,Levothyroxine 50mcg,50mcg,Tablet,Hormone
+Eltroxin 100,Thyroxine,Levothyroxine 100mcg,100mcg,Tablet,Hormone
