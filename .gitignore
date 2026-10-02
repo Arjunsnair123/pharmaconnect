@@ -20,3 +20,6 @@ db.sqlite3
 node_modules/
 .vscode/
 .idea/
+
+# Local Claude Code notes
+CLAUDE.md
