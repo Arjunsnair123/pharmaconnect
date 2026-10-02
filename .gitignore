@@ -9,6 +9,7 @@ myenv/
 
 # Local database
 db.sqlite3
+*.bak
 
 # Generated ML artifacts
 *.png

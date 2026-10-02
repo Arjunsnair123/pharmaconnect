@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.db import IntegrityError, transaction
 from django.test import TestCase
 from django.urls import reverse
 
@@ -53,3 +54,24 @@ class PharmacyInventoryPermissionTests(TestCase):
         self.assertEqual(self.client.post(reverse("pharmacy_inventory"), {
             "medicine": self.medicine.id, "quantity": 1,
         }).status_code, 403)
+
+
+class InventoryConstraintTests(TestCase):
+    def setUp(self):
+        user = User.objects.create_user("p", password="pw")
+        self.pharmacy = Pharmacy.objects.create(
+            user=user, name="P", address="x", latitude=10.0, longitude=76.0
+        )
+        self.medicine = Medicine.objects.create(
+            brand_name="Dolo 650", generic_name="Paracetamol", composition="Paracetamol",
+            strength="650mg", dosage_form="tablet", category="analgesic",
+        )
+
+    def test_duplicate_pharmacy_medicine_row_is_rejected(self):
+        Inventory.objects.create(pharmacy=self.pharmacy, medicine=self.medicine, quantity=1)
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Inventory.objects.create(pharmacy=self.pharmacy, medicine=self.medicine, quantity=2)
+
+    def test_negative_quantity_is_rejected(self):
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Inventory.objects.create(pharmacy=self.pharmacy, medicine=self.medicine, quantity=-1)

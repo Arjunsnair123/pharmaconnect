@@ -11,7 +11,7 @@ from pharmacies.models import Pharmacy
 from medicines.models import Medicine
 from .models import Inventory
 from accounts.views import get_role
-from pharmacies.utils import haversine
+from pharmacies.utils import haversine, bounding_box_filter, get_radius_km
 from ml_service.models import SearchLog
 
 
@@ -41,10 +41,15 @@ class AvailabilityView(APIView):
         except Medicine.DoesNotExist:
             return Response({"error": "Medicine not found"}, status=404)
 
+        radius_km = get_radius_km(request)
+
         stocks = Inventory.objects.select_related("pharmacy").filter(
             medicine=medicine,
-            quantity__gt=0
+            quantity__gt=0,
+            **bounding_box_filter(user_lat, user_lon, radius_km, prefix="pharmacy__")
         )
+        if emergency:
+            stocks = stocks.filter(pharmacy__is_24x7=True)
 
         result = []
         nearest_pharmacy = None
@@ -53,10 +58,9 @@ class AvailabilityView(APIView):
         for stock in stocks:
             p = stock.pharmacy
 
-            if emergency and not p.is_24x7:
-                continue
-
             dist = haversine(user_lat, user_lon, p.latitude, p.longitude)
+            if dist > radius_km:
+                continue
 
             if dist < nearest_distance:
                 nearest_distance = dist
@@ -99,7 +103,7 @@ def pharmacy_inventory(request):
     if get_role(request.user) != "PHARMACY":
         return HttpResponseForbidden("Pharmacy account required.")
 
-    pharmacy = Pharmacy.objects.filter(user=request.user).first()
+    pharmacy = getattr(request.user, "pharmacy", None)
     if pharmacy is None:
         return HttpResponseForbidden("No pharmacy is linked to this account.")
 
@@ -107,6 +111,8 @@ def pharmacy_inventory(request):
         try:
             med_id = request.POST.get("medicine")
             qty = int(request.POST.get("quantity", 0))
+            if qty < 0:
+                raise ValueError("Quantity cannot be negative")
 
             medicine = Medicine.objects.get(id=med_id)
 

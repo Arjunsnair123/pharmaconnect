@@ -8,5 +8,15 @@ class Inventory(models.Model):
     quantity = models.IntegerField()
     last_updated = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["pharmacy", "medicine"], name="unique_pharmacy_medicine"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(quantity__gte=0), name="inventory_quantity_non_negative"
+            ),
+        ]
+
     def __str__(self):
         return f"{self.pharmacy.name} - {self.medicine.brand_name} ({self.quantity})"

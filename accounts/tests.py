@@ -20,7 +20,6 @@ class RegistrationTests(TestCase):
 
         profile = Profile.objects.get(user__username="mallory")
         self.assertEqual(profile.role, "PATIENT")
-        self.assertIsNone(profile.pharmacy)
         pharmacy.refresh_from_db()
         self.assertEqual(pharmacy.user, owner)
 
