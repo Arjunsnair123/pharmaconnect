@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
 from .models import Pharmacy
+from accounts.views import get_role
 from .utils import haversine
 from inventory.models import Inventory
 from ml_service.ai_restock_service import generate_ai_restock
@@ -39,7 +40,7 @@ class NearestPharmacyView(APIView):
 # ----------- WEB: Pharmacy Dashboard -----------
 @login_required
 def pharmacy_dashboard(request):
-    if request.user.profile.role != "PHARMACY":
+    if get_role(request.user) != "PHARMACY":
         return redirect("login")
 
     pharmacy, created = Pharmacy.objects.get_or_create(

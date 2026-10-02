@@ -16,6 +16,10 @@
     <form method="post" action="{% url 'login' %}" class="space-y-6">
       {% csrf_token %}
 
+      {% if error %}
+      <p class="text-sm text-red-600 text-center font-semibold">{{ error }}</p>
+      {% endif %}
+
       <div>
         <label class="block text-gray-700 text-sm font-bold mb-2 ml-1">Username</label>
         <input type="text" name="username" required
