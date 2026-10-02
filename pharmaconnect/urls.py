@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from accounts.views import home_redirect
 
@@ -18,4 +19,9 @@ urlpatterns = [
     path('api/medicines/', include('medicines.urls')),
     path('api/pharmacies/', include('pharmacies.urls')),
     path('api/inventory/', include('inventory.urls')),
+    path('api/ml/', include('ml_service.urls')),
+
+    # API documentation
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='api_docs'),
 ]

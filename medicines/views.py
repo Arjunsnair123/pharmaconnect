@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Q
@@ -8,64 +10,79 @@ from medicines.models import Medicine
 from .models import Medicine
 from .serializers import MedicineSerializer
 from inventory.models import Inventory
-from pharmacies.utils import haversine, bounding_box_filter, get_radius_km
+from pharmacies.utils import haversine, bounding_box_filter
+from pharmaconnect.api import (
+    BrandQuerySerializer, MedicineSearchQuerySerializer,
+    SmartSubstituteQuerySerializer, paginate,
+)
 
 
 class MedicineSearchView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(parameters=[MedicineSearchQuerySerializer], responses=MedicineSerializer(many=True))
     def get(self, request):
-        query = request.GET.get('q', '')
+        params = MedicineSearchQuerySerializer(data=request.query_params)
+        params.is_valid(raise_exception=True)
+        query = params.validated_data['q']
+
         medicines = Medicine.objects.filter(
             Q(brand_name__icontains=query) |
             Q(generic_name__icontains=query)
-        )
-        serializer = MedicineSerializer(medicines, many=True)
-        return Response(serializer.data)
+        ).order_by('brand_name', 'id')
+
+        page, envelope = paginate(self, request, medicines)
+        return Response({**envelope, "results": MedicineSerializer(page, many=True).data})
 
 
 class SubstituteSuggestionView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(parameters=[BrandQuerySerializer], responses=OpenApiTypes.OBJECT)
     def get(self, request):
-        brand = request.GET.get('brand')
+        params = BrandQuerySerializer(data=request.query_params)
+        params.is_valid(raise_exception=True)
+        brand = params.validated_data['brand']
 
-        try:
-            medicine = Medicine.objects.get(brand_name__iexact=brand)
-        except Medicine.DoesNotExist:
+        medicine = Medicine.objects.filter(brand_name__iexact=brand).first()
+        if medicine is None:
             return Response({"error": "Medicine not found"}, status=404)
 
         substitutes = Medicine.objects.filter(
             generic_name=medicine.generic_name,
             dosage_form=medicine.dosage_form
-        ).exclude(id=medicine.id)
+        ).exclude(id=medicine.id).order_by('brand_name', 'id')
+
+        page, envelope = paginate(self, request, substitutes)
 
         return Response({
             "original": MedicineSerializer(medicine).data,
-            "substitutes": MedicineSerializer(substitutes, many=True).data
+            **envelope,
+            "substitutes": MedicineSerializer(page, many=True).data
         })
 
 
 class SmartSubstituteView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(parameters=[SmartSubstituteQuerySerializer], responses=OpenApiTypes.OBJECT)
     def get(self, request):
-        brand = request.GET.get('brand')
-        lat = float(request.GET.get('lat'))
-        lon = float(request.GET.get('lon'))
-        emergency = request.GET.get('emergency', 'false').lower() == 'true'
+        params = SmartSubstituteQuerySerializer(data=request.query_params)
+        params.is_valid(raise_exception=True)
+        brand = params.validated_data['brand']
+        lat = params.validated_data['lat']
+        lon = params.validated_data['lon']
+        radius_km = params.validated_data['radius_km']
+        emergency = params.validated_data['emergency']
 
-        try:
-            target = Medicine.objects.get(brand_name__iexact=brand)
-        except Medicine.DoesNotExist:
+        target = Medicine.objects.filter(brand_name__iexact=brand).first()
+        if target is None:
             return Response({"error": "Medicine not found"}, status=404)
 
         candidates = Medicine.objects.filter(
         generic_name=target.generic_name,
         dosage_form=target.dosage_form
         ).exclude(id=target.id)
-
-        radius_km = get_radius_km(request)
 
         # One query for every candidate's stock (was one query per medicine
         # plus one per stock row for its pharmacy).
@@ -101,15 +118,22 @@ class SmartSubstituteView(APIView):
 
         results.sort(key=lambda x: x["distance_km"])
 
+        page, envelope = paginate(self, request, results)
+
         return Response({
             "requested": target.brand_name,
             "generic": target.generic_name,
-            "nearest_substitutes": results
+            **envelope,
+            "nearest_substitutes": page
         })
 
 class MedicineSuggestView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        parameters=[OpenApiParameter("q", str, description="At least 2 characters.")],
+        responses={200: {"type": "array", "items": {"type": "string"}}},
+    )
     def get(self, request):
         q = request.GET.get("q", "").strip()
 
