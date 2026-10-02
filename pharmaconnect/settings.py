@@ -183,5 +183,15 @@ SIMPLE_JWT = {
 DEFAULT_SEARCH_RADIUS_KM = float(os.environ.get('DEFAULT_SEARCH_RADIUS_KM', 50))
 MAX_SEARCH_RADIUS_KM = float(os.environ.get('MAX_SEARCH_RADIUS_KM', 500))
 
+# Restock suggestions are cached; stock edits and retraining invalidate them.
+# LocMemCache is per-process: fine for a single dev server, swap for
+# Redis/Memcached when running several workers.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+RESTOCK_CACHE_TIMEOUT = int(os.environ.get('RESTOCK_CACHE_TIMEOUT', 15 * 60))
+
 CORS_ALLOW_ALL_ORIGINS = env_bool('CORS_ALLOW_ALL_ORIGINS', False)
 CORS_ALLOWED_ORIGINS = env_list('CORS_ALLOWED_ORIGINS')

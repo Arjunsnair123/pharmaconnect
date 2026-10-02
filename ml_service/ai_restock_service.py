@@ -1,11 +1,44 @@
+import logging
 from collections import defaultdict
 
-from ml.demand_forecast import predict_next_week_demand
+from django.conf import settings
+from django.core.cache import cache
+
+from ml.demand_forecast import ModelNotTrained, predict_next_week_demand
 from ml_service.spatial_allocator import allocate_weekly_stock
 from inventory.models import Inventory
 
+logger = logging.getLogger(__name__)
+
+RESTOCK_CACHE_KEY = "ai_restock:v1"
+
+
+def invalidate_restock_cache():
+    cache.delete(RESTOCK_CACHE_KEY)
+
 
 def generate_ai_restock():
+    """
+    Restock suggestions for every pharmacy, cached.
+
+    The result depends on the trained model, the search logs and current
+    stock. Stock changes and retraining invalidate the cache explicitly;
+    new searches are picked up when the timeout expires.
+    """
+    result = cache.get(RESTOCK_CACHE_KEY)
+    if result is None:
+        try:
+            result = _compute_ai_restock()
+        except ModelNotTrained as exc:
+            # Suggestions are an extra; the dashboard must still load.
+            # Not cached, so they appear as soon as the model is trained.
+            logger.warning("Restock suggestions unavailable: %s", exc)
+            return {"total_area_demand": None, "pharmacy_allocation": {}}
+        cache.set(RESTOCK_CACHE_KEY, result, settings.RESTOCK_CACHE_TIMEOUT)
+    return result
+
+
+def _compute_ai_restock():
 
     # Step 1: Predict next week demand
     total_weekly_demand, predictions = predict_next_week_demand()
