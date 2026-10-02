@@ -14,6 +14,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+import dj_database_url
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -105,11 +106,13 @@ WSGI_APPLICATION = 'pharmaconnect.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# SQLite by default; set DATABASE_URL (e.g. postgres://user:pass@host:5432/db)
+# to use PostgreSQL.
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
 }
 
 
@@ -162,6 +165,11 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+# Location searches only consider pharmacies within this distance; clients
+# may narrow or widen it with ?radius_km= up to the maximum.
+DEFAULT_SEARCH_RADIUS_KM = float(os.environ.get('DEFAULT_SEARCH_RADIUS_KM', 50))
+MAX_SEARCH_RADIUS_KM = float(os.environ.get('MAX_SEARCH_RADIUS_KM', 500))
 
 CORS_ALLOW_ALL_ORIGINS = env_bool('CORS_ALLOW_ALL_ORIGINS', False)
 CORS_ALLOWED_ORIGINS = env_list('CORS_ALLOWED_ORIGINS')
