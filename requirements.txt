@@ -26,6 +26,8 @@ numpy==2.4.1
 packaging==25.0
 pandas==2.3.3
 pillow==12.1.0
+psycopg==3.3.6
+psycopg-binary==3.3.6
 Pygments==2.19.2
 PyJWT==2.10.1
 pyparsing==3.3.1
