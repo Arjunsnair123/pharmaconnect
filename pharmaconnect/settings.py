@@ -75,6 +75,11 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
 ]
 
+# Django's default ("same-origin") sends no Referer to cross-origin requests,
+# and OpenStreetMap's tile servers reject tile requests without one
+# ("Access blocked"). Send the origin only when crossing sites.
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
 ROOT_URLCONF = 'pharmaconnect.urls'
 
 TEMPLATES = [
