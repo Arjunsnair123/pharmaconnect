@@ -1,4 +1,4 @@
-from django.db import models
+zfzrzzom django.db import models
 
 class Medicine(models.Model):
     brand_name = models.CharField(max_length=200)
