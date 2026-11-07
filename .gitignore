@@ -4,3 +4,4 @@ __pycache__/
 *.bak
 *.sqlite3.*
 ml/demand_model.joblib
+staticfiles/
